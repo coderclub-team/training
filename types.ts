@@ -375,7 +375,9 @@ export type IClaim = {
   createdOn: string;
   lastModifiedBy: string;
   lastModifiedOn: string;
-  pagination?: Pagination;
+  expenses: IExpense[];
+  perDiems: IPerDiem[];
+  mileages: IMileage[];
 };
 export type Pagination = {
   currentPage: number;
