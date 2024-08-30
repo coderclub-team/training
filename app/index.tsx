@@ -1,9 +1,11 @@
-import { useClaimsQuery } from "@/store/api";
-import React, { useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { useClaimsQuery, useDeleteClaimMutation } from "@/store/api";
+import React, { useEffect, useState } from "react";
+import { Alert, FlatList, Pressable, Text, View } from "react-native";
 
 export default function Page() {
   const [page, setPage] = useState(1);
+  const [deleteClaimById, { data, isSuccess, isError, error }] =
+    useDeleteClaimMutation();
 
   const {
     data: claims,
@@ -24,16 +26,30 @@ export default function Page() {
       setPage((prevPage) => prevPage + 1);
     }
   };
+  const deleteClaim = (id: number) => deleteClaimById(id);
+  useEffect(() => {
+    if (isSuccess) Alert.alert("Deleted");
+    if (isError) Alert.alert("Error");
+    console.log(error);
+  }, [isSuccess, isError, error]);
 
   return (
     <View className="flex">
+      <Text
+        style={{
+          fontSize: 48,
+          fontWeight: 900,
+        }}
+      >
+        {claims?.data.length} / {claims?.pagination.totalCount}
+      </Text>
       <FlatList
         data={claims?.data}
         renderItem={({ item, index }) => (
           <View
             key={index?.toFixed()}
             style={{
-              backgroundColor: "lightgrey",
+              backgroundColor: item.status === 1 ? "orange" : "lightgrey",
               padding: 10,
               margin: 10,
             }}
@@ -44,7 +60,7 @@ export default function Page() {
             <Text>{item.purpose}</Text>
 
             <Text>{item.createdOn}</Text>
-            <Pressable onPress={() => () => {}}>
+            <Pressable onPress={() => deleteClaim(item.id)}>
               <View
                 style={{
                   width: 70,
