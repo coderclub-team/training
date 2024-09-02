@@ -15,7 +15,7 @@ import {
 export default function Page() {
   const [queryParams, setQueryPrams] = useState<IPaginationQuery>({
     _page: 1,
-    _per_page: 10,
+    _per_page: 20,
   });
   const [deleteClaimById, { data, isSuccess, isError, error }] =
     useDeleteClaimMutation();
@@ -46,24 +46,34 @@ export default function Page() {
   const handletextChange = AppUtil.debounce((text: string) => {
     setQueryPrams((params) => ({
       ...params,
+      _page: 1,
       _searchTerm: text || undefined,
     }));
   }, 1000);
   const handleStartDateChange = (event: any, selectedDate?: Date) => {
     setQueryPrams((params) => ({
       ...params,
+      _page: 1,
+
       _startDate: selectedDate?.toString(),
     }));
   };
   const handleEndDateChange = (event: any, selectedDate?: Date) => {
     setQueryPrams((params) => ({
       ...params,
+      _page: 1,
+
       _endDate: selectedDate?.toString(),
     }));
   };
 
   return (
-    <View className="flex">
+    <View
+      className="flex"
+      style={{
+        marginBottom: 170,
+      }}
+    >
       <Text
         style={{
           fontSize: 48,
@@ -162,7 +172,7 @@ export default function Page() {
         // onStartReachedThreshold={0.5}
         // onStartReached={() => setPage((page) => page - 1)}
         onEndReached={() => loadMore()}
-        onEndReachedThreshold={0.5}
+        onEndReachedThreshold={1}
         ListFooterComponent={
           <View
             style={{
