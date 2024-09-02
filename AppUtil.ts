@@ -4,6 +4,38 @@ export default class AppUtil {
   //   static getBaseUrl() {
   //     return "http://localhost:3000";
   //   }
+
+  static formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  static debounce(
+    callback: Function,
+    wait: number,
+    immediate: boolean = false
+  ) {
+    let timeout: NodeJS.Timeout | null;
+
+    return function (this: any, ...args: any[]) {
+      const context = this;
+
+      const later = function () {
+        timeout = null;
+        if (!immediate) callback.apply(context, args);
+      };
+
+      const callNow = immediate && !timeout;
+
+      clearTimeout(timeout as NodeJS.Timeout);
+      timeout = setTimeout(later, wait);
+
+      if (callNow) callback.apply(context, args);
+    };
+  }
   static storeToken(token: string) {
     localStorage.setItem("token", token);
   }
@@ -12,7 +44,7 @@ export default class AppUtil {
   }
   static getToken() {
     return Promise.resolve(
-      "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic3VwZXJhZG1pbiIsImVtYWlsIjoiay5hLm4uc2hhZmVlcUBnbWFpbC5jb20iLCJ1aWQiOiIwOTMwZWNiMC00ODAzLTQ5YzQtOWRlMi03NGU5ZmU3YjJkYWYiLCJHcmFkZUlEIjoiMTU4OCIsIkdyYWRlTmFtZSI6Ik1hbmFnZXJzIiwiQ29tcGFueUlEIjoiODI1IiwiQ29tYXBueU5hbWUiOiJMVVggVklFVCBBTUVSSUNBTiBCRUFVVFkgQ09NUEFOWSBMSU1JVEVEIiwiQnJhbmRJRCI6IjI2NCIsIkJyYW5kTmFtZSI6IkJBVEggJiBCT0RZIFdPUktTIiwiU3RvcmVJRCI6Ijc4NiIsIlN0b3JlTmFtZSI6IkJBVEggJiBCT0RZIFdPUktTIEVNUVVBUlRJRVIgQkFOR0tPSyIsIlByb2RDYXRJRCI6IjE1NzIiLCJQcm9kQ2F0TmFtZSI6IkJSSVNLIFNVUFBMWSBTT0xVVElPTlMgU0ROIEJIRCIsIkNvc3RDZW50cmVJZCI6IjQ3IiwiQ29zdENlbnRyZU5hbWUiOiJBRE1JTklTVFJBVElPTiIsIkNvdW50cnlDb2RlIjoiTVkiLCJDb3VudHJ5TmFtZSI6Ik1hbGF5c2lhIiwiQ3VycmVuY3lDb2RlIjoiTVlSIiwiRGVwYXJ0bWVudElEIjoiMTEiLCJHbXRPZmZzZXQiOiIyODgwMCIsIkltYWdlVXJsIjoidXNlcnMvNzI2N2VlNWEtNWY5Ni00OWU2LWIyOTAtMmI0ZjZjMDU0NzA2LmpwZWciLCJEZXNpZ25hdGlvbiI6IklUIEFkbWluIiwiaXAiOiIxNTIuNTguMjUzLjEzIiwicm9sZXMiOiJBZG1pbiIsIm5iZiI6MTcyNDk5NTM5OSwiZXhwIjoxNzI1MDI0MTk5LCJpc3MiOiJDbGFpbXMuQXNzaXN0MzYwLkFwaSIsImF1ZCI6IkNsYWltcy5Bc3Npc3QzNjAuQXBpLlVzZXIifQ.iVndTeaMJNPKHsZIoG5bJwACHl829_kRU42WbLP4HUZ5IfW0SHJwYf9L2U0JBu5ppd6bDWJlTIMMVkcMYvE1qg"
+      "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic3VwZXJhZG1pbiIsImVtYWlsIjoiay5hLm4uc2hhZmVlcUBnbWFpbC5jb20iLCJ1aWQiOiIwOTMwZWNiMC00ODAzLTQ5YzQtOWRlMi03NGU5ZmU3YjJkYWYiLCJHcmFkZUlEIjoiMTU4OCIsIkdyYWRlTmFtZSI6Ik1hbmFnZXJzIiwiQ29tcGFueUlEIjoiODI1IiwiQ29tYXBueU5hbWUiOiJMVVggVklFVCBBTUVSSUNBTiBCRUFVVFkgQ09NUEFOWSBMSU1JVEVEIiwiQnJhbmRJRCI6IjI2NCIsIkJyYW5kTmFtZSI6IkJBVEggJiBCT0RZIFdPUktTIiwiU3RvcmVJRCI6Ijc4NiIsIlN0b3JlTmFtZSI6IkJBVEggJiBCT0RZIFdPUktTIEVNUVVBUlRJRVIgQkFOR0tPSyIsIlByb2RDYXRJRCI6IjE1NzIiLCJQcm9kQ2F0TmFtZSI6IkJSSVNLIFNVUFBMWSBTT0xVVElPTlMgU0ROIEJIRCIsIkNvc3RDZW50cmVJZCI6IjQ3IiwiQ29zdENlbnRyZU5hbWUiOiJBRE1JTklTVFJBVElPTiIsIkNvdW50cnlDb2RlIjoiTVkiLCJDb3VudHJ5TmFtZSI6Ik1hbGF5c2lhIiwiQ3VycmVuY3lDb2RlIjoiTVlSIiwiRGVwYXJ0bWVudElEIjoiMTEiLCJHbXRPZmZzZXQiOiIyODgwMCIsIkltYWdlVXJsIjoidXNlcnMvNzI2N2VlNWEtNWY5Ni00OWU2LWIyOTAtMmI0ZjZjMDU0NzA2LmpwZWciLCJEZXNpZ25hdGlvbiI6IklUIEFkbWluIiwiaXAiOiIxNTIuNTguMjUzLjU5Iiwicm9sZXMiOiJBZG1pbiIsIm5iZiI6MTcyNTI4MzM1MCwiZXhwIjoxNzI1MzEyMTUwLCJpc3MiOiJDbGFpbXMuQXNzaXN0MzYwLkFwaSIsImF1ZCI6IkNsYWltcy5Bc3Npc3QzNjAuQXBpLlVzZXIifQ.tC5jPUouoFpTMl4b7D7CjgLMXGgV9b73YoxxBJFXvJVvTJB5ec9_q7sKl5TAN-pBb6WRTNIdFoeBwWyqwopnyw"
     );
   }
   static removeToken() {

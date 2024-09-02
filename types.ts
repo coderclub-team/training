@@ -209,6 +209,9 @@ export interface IPost {
 export interface IPaginationQuery {
   _page: number;
   _per_page: number;
+  _searchTerm?: string;
+  _startDate?: string;
+  _endDate?: string;
 }
 export interface IPostResponse {
   data: IPost[];

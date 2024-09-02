@@ -65,11 +65,14 @@ export const api = createApi({
       },
       IPaginationQuery
     >({
-      query: ({ _page, _per_page }) => ({
+      query: ({ _page, _per_page, _searchTerm, _startDate, _endDate }) => ({
         url: "Claims",
         params: {
           pageNumber: _page,
           pageSize: _per_page,
+          searchterm: _searchTerm,
+          startDate: _startDate ? AppUtil.formatDate(_startDate) : undefined,
+          endDate: _endDate ? AppUtil.formatDate(_endDate) : undefined,
         },
       }),
       transformResponse(baseQueryReturnValue: IClaim[], meta, arg) {

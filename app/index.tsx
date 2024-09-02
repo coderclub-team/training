@@ -1,9 +1,22 @@
+import AppUtil from "@/AppUtil";
 import { useClaimsQuery, useDeleteClaimMutation } from "@/store/api";
+import { IPaginationQuery } from "@/types";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useEffect, useState } from "react";
-import { Alert, FlatList, Pressable, Text, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function Page() {
-  const [page, setPage] = useState(1);
+  const [queryParams, setQueryPrams] = useState<IPaginationQuery>({
+    _page: 1,
+    _per_page: 10,
+  });
   const [deleteClaimById, { data, isSuccess, isError, error }] =
     useDeleteClaimMutation();
 
@@ -12,10 +25,7 @@ export default function Page() {
     isLoading,
     isUninitialized,
     isFetching,
-  } = useClaimsQuery({
-    _page: page,
-    _per_page: 10,
-  });
+  } = useClaimsQuery(queryParams);
 
   const loadMore = () => {
     if (
@@ -23,15 +33,34 @@ export default function Page() {
       !isFetching &&
       claims?.pagination.totalCount !== claims?.data?.length
     ) {
-      setPage((prevPage) => prevPage + 1);
+      setQueryPrams((params) => ({ ...params, _page: params._page + 1 }));
     }
   };
   const deleteClaim = (id: number) => deleteClaimById(id);
   useEffect(() => {
     if (isSuccess) Alert.alert("Deleted");
     if (isError) Alert.alert("Error");
-    console.log(error);
+    // console.log(error);
   }, [isSuccess, isError, error]);
+
+  const handletextChange = AppUtil.debounce((text: string) => {
+    setQueryPrams((params) => ({
+      ...params,
+      _searchTerm: text || undefined,
+    }));
+  }, 1000);
+  const handleStartDateChange = (event: any, selectedDate?: Date) => {
+    setQueryPrams((params) => ({
+      ...params,
+      _startDate: selectedDate?.toString(),
+    }));
+  };
+  const handleEndDateChange = (event: any, selectedDate?: Date) => {
+    setQueryPrams((params) => ({
+      ...params,
+      _endDate: selectedDate?.toString(),
+    }));
+  };
 
   return (
     <View className="flex">
@@ -43,6 +72,56 @@ export default function Page() {
       >
         {claims?.data.length} / {claims?.pagination.totalCount}
       </Text>
+      <View>
+        <TextInput
+          onChangeText={handletextChange}
+          style={{
+            width: 200,
+            height: 50,
+            borderWidth: 1,
+            borderColor: "black",
+          }}
+        />
+      </View>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          padding: 10,
+          marginHorizontal: 10,
+        }}
+      >
+        <Text>Start Date</Text>
+        <Text>End Date</Text>
+      </View>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          padding: 10,
+        }}
+      >
+        <DateTimePicker
+          maximumDate={new Date()}
+          onChange={(event, selectedDate) => {
+            handleStartDateChange(event, selectedDate);
+          }}
+          value={
+            queryParams._startDate
+              ? new Date(queryParams._startDate)
+              : new Date()
+          }
+        />
+        <DateTimePicker
+          maximumDate={new Date()}
+          onChange={(event, selectedDate) => {
+            handleEndDateChange(event, selectedDate);
+          }}
+          value={
+            queryParams._endDate ? new Date(queryParams._endDate) : new Date()
+          }
+        />
+      </View>
       <FlatList
         data={claims?.data}
         renderItem={({ item, index }) => (
@@ -54,7 +133,14 @@ export default function Page() {
               margin: 10,
             }}
           >
-            <Text>{item.id}</Text>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: 700,
+              }}
+            >
+              {item.id}
+            </Text>
             <Text>{item.name}</Text>
             <Text>{item.status}</Text>
             <Text>{item.purpose}</Text>
