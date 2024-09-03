@@ -144,5 +144,14 @@ export const store = configureStore({
     [api.reducerPath]: api.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(api.middleware),
+    getDefaultMiddleware({
+      serializableCheck: false, // Disable serializable check middleware
+      immutableCheck: false, // Disable immutable check middleware
+    }).concat(api.middleware),
 });
+function getDefaultMiddleware(arg0: {
+  serializableCheck: boolean; // Disable serializable check middleware
+  immutableCheck: boolean;
+}) {
+  throw new Error("Function not implemented.");
+}

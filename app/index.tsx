@@ -1,11 +1,14 @@
 import AppUtil from "@/AppUtil";
 import { useClaimsQuery, useDeleteClaimMutation } from "@/store/api";
 import { IPaginationQuery } from "@/types";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import React, { useEffect, useState } from "react";
+import DateTimePicker, {
+  DateTimePickerAndroid,
+} from "@react-native-community/datetimepicker";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   FlatList,
+  Platform,
   Pressable,
   Text,
   TextInput,
@@ -13,9 +16,12 @@ import {
 } from "react-native";
 
 export default function Page() {
+  let flatListRef = useRef<FlatList>(null);
+  const [openStartDate, setOpenStartDate] = useState(false);
+  const [openEndDate, setOpenEndDate] = useState(false);
   const [queryParams, setQueryPrams] = useState<IPaginationQuery>({
     _page: 1,
-    _per_page: 20,
+    _per_page: 10,
   });
   const [deleteClaimById, { data, isSuccess, isError, error }] =
     useDeleteClaimMutation();
@@ -44,29 +50,68 @@ export default function Page() {
   }, [isSuccess, isError, error]);
 
   const handletextChange = AppUtil.debounce((text: string) => {
-    setQueryPrams((params) => ({
-      ...params,
-      _page: 1,
-      _searchTerm: text || undefined,
-    }));
+    setQueryPrams((params) => {
+      flatListRef?.current?.scrollToOffset({ animated: true, offset: 0 });
+      return {
+        ...params,
+        _page: 1,
+        _searchTerm: text || undefined,
+      };
+    });
   }, 1000);
   const handleStartDateChange = (event: any, selectedDate?: Date) => {
-    setQueryPrams((params) => ({
-      ...params,
-      _page: 1,
+    setQueryPrams((params) => {
+      flatListRef?.current?.scrollToOffset({ animated: true, offset: 0 });
 
-      _startDate: selectedDate?.toString(),
-    }));
+      return {
+        ...params,
+        _page: 1,
+
+        _startDate: selectedDate?.toString(),
+      };
+    });
   };
   const handleEndDateChange = (event: any, selectedDate?: Date) => {
-    setQueryPrams((params) => ({
-      ...params,
-      _page: 1,
+    setQueryPrams((params) => {
+      flatListRef?.current?.scrollToOffset({ animated: true, offset: 0 });
 
-      _endDate: selectedDate?.toString(),
-    }));
+      return {
+        ...params,
+        _page: 1,
+
+        _endDate: selectedDate?.toString(),
+      };
+    });
+  };
+  const handleStartDateChangeAndroid = () => {
+    DateTimePickerAndroid.open({
+      value: queryParams._startDate
+        ? new Date(queryParams._startDate)
+        : new Date(),
+      onChange: handleStartDateChange,
+      mode: "date",
+      is24Hour: true,
+    });
+  };
+  const handleEndDateChangeAndroid = () => {
+    DateTimePickerAndroid.open({
+      value: queryParams._endDate ? new Date(queryParams._endDate) : new Date(),
+      onChange: handleEndDateChange,
+      mode: "date",
+      is24Hour: true,
+    });
   };
 
+  let clearFilters = () => {
+    setQueryPrams(() => {
+      flatListRef?.current?.scrollToOffset({ animated: true, offset: 0 });
+
+      return {
+        _page: 1,
+        _per_page: 10,
+      };
+    });
+  };
   return (
     <View
       className="flex"
@@ -82,16 +127,27 @@ export default function Page() {
       >
         {claims?.data.length} / {claims?.pagination.totalCount}
       </Text>
-      <View>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 32,
+        }}
+      >
         <TextInput
           onChangeText={handletextChange}
+          value={queryParams._searchTerm}
           style={{
             width: 200,
             height: 50,
             borderWidth: 1,
             borderColor: "black",
+            marginLeft: 32,
           }}
         />
+        <Pressable onPress={clearFilters}>
+          <Text>CLEAR FILTER</Text>
+        </Pressable>
       </View>
       <View
         style={{
@@ -101,8 +157,13 @@ export default function Page() {
           marginHorizontal: 10,
         }}
       >
-        <Text>Start Date</Text>
-        <Text>End Date</Text>
+        <Pressable onPress={handleStartDateChangeAndroid}>
+          <Text>Start Date</Text>
+        </Pressable>
+
+        <Pressable onPress={handleEndDateChangeAndroid}>
+          <Text>End Date</Text>
+        </Pressable>
       </View>
       <View
         style={{
@@ -111,28 +172,35 @@ export default function Page() {
           padding: 10,
         }}
       >
-        <DateTimePicker
-          maximumDate={new Date()}
-          onChange={(event, selectedDate) => {
-            handleStartDateChange(event, selectedDate);
-          }}
-          value={
-            queryParams._startDate
-              ? new Date(queryParams._startDate)
-              : new Date()
-          }
-        />
-        <DateTimePicker
-          maximumDate={new Date()}
-          onChange={(event, selectedDate) => {
-            handleEndDateChange(event, selectedDate);
-          }}
-          value={
-            queryParams._endDate ? new Date(queryParams._endDate) : new Date()
-          }
-        />
+        {Platform.OS === "ios" && (
+          <React.Fragment>
+            <DateTimePicker
+              maximumDate={new Date()}
+              onChange={(event, selectedDate) => {
+                handleStartDateChange(event, selectedDate);
+              }}
+              value={
+                queryParams._startDate
+                  ? new Date(queryParams._startDate)
+                  : new Date()
+              }
+            />
+            <DateTimePicker
+              maximumDate={new Date()}
+              onChange={(event, selectedDate) => {
+                handleEndDateChange(event, selectedDate);
+              }}
+              value={
+                queryParams._endDate
+                  ? new Date(queryParams._endDate)
+                  : new Date()
+              }
+            />
+          </React.Fragment>
+        )}
       </View>
       <FlatList
+        ref={flatListRef}
         data={claims?.data}
         renderItem={({ item, index }) => (
           <View
