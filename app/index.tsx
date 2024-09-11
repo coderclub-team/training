@@ -1,9 +1,10 @@
 import { usePostsMutation } from "@/store/api";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Dimensions, Platform, Text, View } from "react-native";
 import {
   AutocompleteDropdown,
   AutocompleteDropdownContextProvider,
+  AutocompleteDropdownItem,
   IAutocompleteDropdownRef,
 } from "react-native-autocomplete-dropdown";
 
@@ -11,20 +12,18 @@ function Page() {
   let [fetchPosts, { data: posts, isLoading }] = usePostsMutation();
   const [search, setSearch] = React.useState("");
 
-  const [suggestionsList, setSuggestionsList] = useState(null);
+  const [suggestionsList, setSuggestionsList] = useState<
+    AutocompleteDropdownItem[] | null
+  >(null);
   const [selectedItem, setSelectedItem] = useState("");
   const dropdownController = useRef<IAutocompleteDropdownRef>(null);
 
   const searchRef = useRef(null);
 
-  useEffect(() => {
-    fetchPosts({ search: "" });
-  }, []);
-
   const getSuggestions = useCallback(async (q: string) => {
     const filterToken = q.toLowerCase();
     console.log("getSuggestions", q);
-    if (typeof q !== "string" || q.length < 3) {
+    if (typeof q !== "string" || q.length < 1) {
       setSuggestionsList(null);
       return;
     }
@@ -32,7 +31,14 @@ function Page() {
     fetchPosts({ search: q })
       .unwrap()
       .then((data) => {
-        setSuggestionsList(data);
+        let transformedData = data.map((item) => {
+          return {
+            id: item.place_id,
+            title: item.display_name,
+          };
+        });
+
+        setSuggestionsList(transformedData);
       });
   }, []);
 

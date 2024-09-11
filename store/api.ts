@@ -7,6 +7,21 @@ import {
   TagDescription,
 } from "@reduxjs/toolkit/query/react";
 
+interface Location {
+  place_id: string;
+  osm_id: string;
+  osm_type: string;
+  licence: string;
+  lat: string;
+  lon: string;
+  boundingbox: [string, string, string, string];
+  class: string;
+  type: string;
+  display_name: string;
+  display_place: string;
+  display_address: string;
+}
+
 interface Post {
   id: number;
   title: string;
@@ -25,7 +40,8 @@ export const api = createApi({
   reducerPath: "api",
   tagTypes: ["Post", "Claim"],
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:3001",
+    baseUrl:
+      "https://claims-d9haaggkgqanb8bf.southeastasia-01.azurewebsites.net/api/Common/",
     prepareHeaders: async (headers, { getState }) => {
       const token = await AppUtil.getToken();
       if (token) {
@@ -136,14 +152,15 @@ export const api = createApi({
       }),
       invalidatesTags: ["Claim"],
     }),
-    posts: builder.mutation<Post[], TodoSearchPayload>({
+    posts: builder.mutation<Location[], TodoSearchPayload>({
       query: (search) => {
         let params = new URLSearchParams();
         if (search.search) {
-          params.append("q", search.search);
+          params.append("searchTerm", search.search);
         }
+        params.set("CountryName", "Malaysia");
         return {
-          url: `posts?${params.toString()}`,
+          url: `GetLocations?${params.toString()}`,
           method: "GET",
         };
       },
