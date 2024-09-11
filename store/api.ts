@@ -7,18 +7,25 @@ import {
   TagDescription,
 } from "@reduxjs/toolkit/query/react";
 
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+}
 interface Todo {
   userId: number;
   id: number;
   title: string;
   completed: boolean;
 }
+interface TodoSearchPayload {
+  search: string;
+}
 export const api = createApi({
   reducerPath: "api",
   tagTypes: ["Post", "Claim"],
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://claimsdemo.assist360.com.sg/api",
-    // baseUrl: "http://localhost:3001",
+    baseUrl: "http://localhost:3001",
     prepareHeaders: async (headers, { getState }) => {
       const token = await AppUtil.getToken();
       if (token) {
@@ -129,6 +136,18 @@ export const api = createApi({
       }),
       invalidatesTags: ["Claim"],
     }),
+    posts: builder.mutation<Post[], TodoSearchPayload>({
+      query: (search) => {
+        let params = new URLSearchParams();
+        if (search.search) {
+          params.append("q", search.search);
+        }
+        return {
+          url: `posts?${params.toString()}`,
+          method: "GET",
+        };
+      },
+    }),
   }),
 });
 
@@ -137,6 +156,7 @@ export const {
   useFetchImageDataMutation,
   useClaimsQuery,
   useDeleteClaimMutation,
+  usePostsMutation,
 } = api;
 
 export const store = configureStore({

@@ -7,3 +7,17 @@
     font-family: "Playfair Display", system-ui, sans-serif;
   }
 }
+
+let validation(payload:{name:string,city:string}){
+  let errors = {};
+  if (!payload.name) {
+    errors.name = "Name is required";
+  }
+  if (!payload.name?.legth <4) {
+    errors.name = "Name must be at least 4 characters";
+  }
+  if (!payload.city) {
+    errors.city = "City is required";
+  }
+  return errors;
+}
